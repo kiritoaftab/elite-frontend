@@ -1,0 +1,19 @@
+/* Add this to your global CSS or in a <style> tag */
+@media print {
+    body * {
+      visibility: hidden;  /* Hide everything */
+    }
+  
+    #printContainer, #printContainer * {
+      visibility: visible;  /* Only show the receipt container */
+    }
+  
+    #printContainer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  }

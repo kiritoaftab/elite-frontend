@@ -4,7 +4,28 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>POS System</title>
+    <style>
+        @media print {
+      body * {
+        visibility: hidden;  /* Hide everything */
+      }
+    
+      #printContainer, #printContainer * {
+        visibility: visible;  /* Only show the receipt container */
+      }
+    
+      #printContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    </style>
   </head>
   <body>
     <div id="root"></div>

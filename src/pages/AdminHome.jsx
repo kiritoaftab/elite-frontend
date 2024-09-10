@@ -20,6 +20,8 @@ import { Button, Grid, Paper } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import jsPDF from 'jspdf';
+import Receipt from "./Receipt";
+import { createRoot } from "react-dom/client";
 
 
 const drawerWidth = 350;
@@ -62,32 +64,77 @@ export default function AdminHome() {
   };
 
   const generatePDF = (payment) => {
-    const doc = new jsPDF();
-  
-    payment.ordersList.forEach((order, index) => {
-      doc.setFontSize(18);
-      doc.text(`Receipt for Vendor: ${order.vendor.shopName}`, 10, 10 + index * 60);
-      
-      doc.setFontSize(12);
-      doc.text(`Vendor Name: ${order.vendor.firstName} ${order.vendor.lastName}`, 10, 30 + index * 60);
-      doc.text(`Product: ${order.product.name}`, 10, 40 + index * 60);
-      doc.text(`Quantity: ${order.unit}`, 10, 50 + index * 60);
-      
-      // Add more details if necessary
-      doc.text('-------------------------------', 10, 60 + index * 60);
+    const inchToPt = 72;  // Conversion factor from inches to points
+    const pageWidth = 3.14 * inchToPt;  // Convert width to points (3.14 inches, ~226 pts)
+    const lineHeight = 4;  // Line height between text elements
+    const padding = 2;  // Padding for the receipt content
+
+    // Calculate dynamic height based on number of items (we give about 60 pts for each order)
+    const contentHeight = padding + (payment.ordersList.length * 10) + padding;
+    const pageHeight = contentHeight;  // Set the height based on content (no excessive length)
+
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: [pageWidth, pageHeight]  // Set the dynamic page size based on content
     });
-  
+
+    const shopName = payment.ordersList[0].vendor.shopName || 'shopname';
+    doc.setFontSize(10);
+    doc.text(`${shopName}`, 10, padding);
+
+    payment.ordersList.forEach((order, index) => {
+        const yPosition = padding + 40 + index * 60;  // Position for each order
+        doc.setFontSize(6);
+        doc.text(`Product: ${order.product.name}`, 10, yPosition);
+        doc.text(`Quantity: ${order.unit}`, 10, yPosition + lineHeight);
+        doc.text('-------------------------------', 10, yPosition + lineHeight * 2);
+    });
+
     const pdfFile = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfFile);
     const pdfWindow = window.open(pdfUrl);
-  
+
     // Initiate print on the new window
     pdfWindow.onload = () => {
-      pdfWindow.print();
+        pdfWindow.print();
+    };
+};
+
+const generatePDFHtml = (payment, onComplete) => {
+  try {
+    const printContainer = document.createElement('div');
+    printContainer.id = 'printContainer';
+    document.body.appendChild(printContainer);
+
+    const root = createRoot(printContainer);
+
+    const closePrint = () => {
+      root.unmount();
+      document.body.removeChild(printContainer);
+      if (onComplete) onComplete();  // Notify that printing is done
     };
 
+    root.render(<Receipt payment={payment} close={closePrint} />);
 
-  };
+    setTimeout(() => {
+      window.print();
+      window.onafterprint = () => {
+        closePrint();
+      };
+    }, 500); // Adjust timeout if needed
+  } catch (error) {
+    console.error('Error while generating the PDF:', error);
+    alert('Error while generating PDF');
+    if (onComplete) onComplete();  // Ensure the process completes even on error
+  }
+};
+
+
+
+
+
+
 
   useEffect(() => {
     fetchVendors();
@@ -162,36 +209,43 @@ export default function AdminHome() {
     setProductMatrix(updatedMatrix);
   };
 
-  const placeOrder = async() => {
+  const placeOrder = async () => {
     try {
       console.log(productMatrix);
       console.log(cashierDoc?._id);
-
-      const res = await axios.post(`${BASE_URL}/order/create/v2`,{
-        productMatrix:productMatrix,
-        cashier:cashierDoc?._id
+  
+      const res = await axios.post(`${BASE_URL}/order/create/v2`, {
+        productMatrix: productMatrix,
+        cashier: cashierDoc?._id
       });
-
+  
       console.log(res.data);
-      alert('Cart Checked out!!!')
+      alert('Cart Checked out!!!');
       setPaymentsList(res.data.paymentsList);
       setUniqueVendor(res.data.uniqueVendors);
-
-      const paymentIds = res.data.paymentsList.map((pay) => pay._id)
-
-      const res2 = await axios.post(`${BASE_URL}/payment/list`,{paymentIds:paymentIds});
+  
+      const paymentIds = res.data.paymentsList.map((pay) => pay._id);
+  
+      const res2 = await axios.post(`${BASE_URL}/payment/list`, { paymentIds: paymentIds });
       console.log(res2.data);
-      
-      res2.data.payments.map((payment) => {
-        generatePDF(payment);
-      })
-      alert('Printing pdfs');
-      window.location.reload();
+  
+      // Function to print each PDF
+      const printPDFsSequentially = async (payments) => {
+        for (const payment of payments) {
+          await new Promise((resolve) => {
+            generatePDFHtml(payment, resolve);
+          });
+        }
+        alert('All PDFs have been printed!');
+      };
+  
+      // Start the printing process
+      await printPDFsSequentially(res2.data.payments);
     } catch (error) {
       console.log(error);
-      alert("Error while placing order")
+      alert('Error while placing order');
     }
-  }
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -258,7 +312,7 @@ export default function AdminHome() {
                         padding: 3,
                       }}
                     >
-                      <Typography variant="h4" color="black" fontWeight={600}>
+                      <Typography variant="h5" color="black" fontWeight={600}>
                         {product?.name}
                       </Typography>
                       <Box
