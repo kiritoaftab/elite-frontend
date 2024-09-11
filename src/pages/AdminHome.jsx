@@ -16,10 +16,12 @@ import MailIcon from "@mui/icons-material/Mail";
 import axios from "axios";
 import { BASE_URL } from "../constants";
 import { useEffect, useState } from "react";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, Grid, Paper, TextField } from "@mui/material";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import jsPDF from 'jspdf';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
 
 const drawerWidth = 350;
@@ -36,6 +38,14 @@ export default function AdminHome() {
   const [cashierDoc, setCashierDoc] = useState(null);
   const [paymentsList,setPaymentsList] = useState([]);
   const [uniqueVendor,setUniqueVendor] = useState(0);
+
+  const [selectedPayment, setSelectedPayment] = useState(''); // No button selected by default
+
+  const handlePaymentSelect = (method) => {
+    setSelectedPayment(method);
+  };
+
+  const [query,setQuery] = useState('');
 
   const fetchVendors = async () => {
     try {
@@ -185,11 +195,33 @@ export default function AdminHome() {
       res2.data.payments.map((payment) => {
         generatePDF(payment);
       })
-      alert('Printing pdfs');
+
+      const res3 = await axios.post(`${BASE_URL}/payment/updateMany`,{
+        paymentIds,
+        status:"PAID",
+        mode:selectedPayment
+      })
+      console.log(res3.data);
+      alert(`Printing pdfs ${res2.data.payments.length}`);
       window.location.reload();
     } catch (error) {
       console.log(error);
       alert("Error while placing order")
+    }
+  }
+
+  const handleSearchQuery = async(e) => {
+    e.preventDefault();
+
+    try {
+      const res = await axios.get(`${BASE_URL}/product/query/${query}`);
+      console.log(res.data);
+      setProducts(res.data.products);
+    } catch (error) {
+      console.log(error);
+      alert('Error while fetching products');
+    }finally{
+      setQuery('');
     }
   }
 
@@ -211,6 +243,18 @@ export default function AdminHome() {
         sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
       >
         <Toolbar />
+        <form style={{marginBottom:15}} onSubmit={handleSearchQuery}>
+          <TextField
+              name="query"
+              label="Search By Name..."
+              variant="outlined"
+              value={query}
+              onChange={(e)=>setQuery(e.target.value)}
+              required
+          />
+          {/* <Button variant="contained">Search</Button> */}
+        </form>
+
 
         <Grid container spacing={2}>
           {vendors?.map((vendor) => {
@@ -249,7 +293,7 @@ export default function AdminHome() {
             ) : (
               ``
             )}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} marginTop={4}>
               {products?.map((product) => {
                 return (
                   <Grid item xs={12} md={6} lg={4}>
@@ -368,12 +412,32 @@ export default function AdminHome() {
                 {grandTotal}
               </Typography>{" "}
             </Typography>
-            <Button variant="contained" onClick={() => placeOrder()}>Proceed to Payment</Button>
+            <Box display="flex" justifyContent="center" alignItems="center" gap={2} mt={2}>
+              <Button
+                variant={selectedPayment === 'CASH' ? 'contained' : 'outlined'}
+                onClick={() => handlePaymentSelect('CASH')}
+                startIcon={<AttachMoneyIcon />}
+              >
+                CASH
+              </Button>
+              <Button
+                variant={selectedPayment === 'UPI' ? 'contained' : 'outlined'}
+                onClick={() => handlePaymentSelect('UPI')}
+                startIcon={<CreditCardIcon />}
+              >
+                UPI
+              </Button>
+            </Box>
+            {selectedPayment.length>0 ? (
+              <Button variant="contained" onClick={() => placeOrder()} sx={{marginTop:2}}>Proceed to Payment</Button>
+            ):``}
             </>
             
           ) : (
             ``
           )}
+
+
         </Box>
       </Drawer>
     </Box>
