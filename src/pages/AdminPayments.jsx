@@ -18,7 +18,7 @@ const AdminPayments = () => {
         params: {
           page: page + 1, // Backend might expect a 1-indexed page number
           pageSize: rowsPerPage,
-          sortField: 'dateCreated',
+          sortField: 'dateModified',
           sortOrder: 'desc',
         },
       });
