@@ -38,7 +38,7 @@ const CollapsibleTable = ({ payments }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {payments.map((payment) => (
+          {payments?.map((payment) => (
             <React.Fragment key={payment._id}>
               <TableRow>
                 <TableCell>
@@ -79,11 +79,11 @@ const CollapsibleTable = ({ payments }) => {
                             <TableRow key={order._id} >
                               <TableCell sx={{  color:'black', fontWeight:600 }}>{order._id}</TableCell>
                               <TableCell sx={{  color:'black', fontWeight:600 }}>{order.vendor.shopName}</TableCell>
-                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.product.name}</TableCell>
-                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.product.sellingPrice}</TableCell>
-                              <TableCell sx={{  color:'black', fontWeight:600 }}>{`${order.cashier.firstName} ${order.cashier.lastName}`}</TableCell>
-                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.unit}</TableCell>
-                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.amountPaid}</TableCell>
+                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.product?.name}</TableCell>
+                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order.product?.sellingPrice}</TableCell>
+                              <TableCell sx={{  color:'black', fontWeight:600 }}>{`${order.cashier?.firstName} ${order.cashier.lastName}`}</TableCell>
+                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order?.unit}</TableCell>
+                              <TableCell sx={{  color:'black', fontWeight:600 }}>{order?.amountPaid}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

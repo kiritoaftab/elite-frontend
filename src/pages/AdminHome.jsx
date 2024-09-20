@@ -479,6 +479,13 @@ const generatePDFHtml = (payment, onComplete) => {
               >
                 UPI
               </Button>
+              <Button
+                variant={selectedPayment === 'STAFF' ? 'contained' : 'outlined'}
+                onClick={() => handlePaymentSelect('STAFF')}
+                startIcon={<CreditCardIcon />}
+              >
+                STAFF
+              </Button>
             </Box>
             {selectedPayment.length>0 ? (
               <Button variant="contained" onClick={() => placeOrder()} sx={{marginTop:2}}>Proceed to Payment</Button>

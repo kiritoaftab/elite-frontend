@@ -26,6 +26,7 @@ import SummarizeIcon from '@mui/icons-material/Summarize';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import { Outlet } from 'react-router-dom';
+import { ShoppingBag } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
@@ -212,7 +213,7 @@ export default function MiniDrawer() {
         </List>
         <Divider />
         <List>
-          {['Reports', 'Payments', 'Orders'].map((text, index) => (
+          {['Reports', 'Payments', 'Orders','Payouts'].map((text, index) => (
             <ListItem key={text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 sx={[
@@ -231,7 +232,8 @@ export default function MiniDrawer() {
                 href={
                     text == 'Reports' ? '/admin/reports' :
                     text == 'Payments' ? '/admin/payments':
-                    text == 'Orders' ? '/admin/orders':``
+                    text == 'Orders' ? '/admin/orders':
+                    text == 'Payouts' ? '/admin/payouts': ``
                 }
               >
                 <ListItemIcon
@@ -252,6 +254,7 @@ export default function MiniDrawer() {
                     {index == 0 ? <SummarizeIcon/> : ``}
                     {index == 1 ? <PaymentsIcon/> : ``}
                     {index == 2 ? <ShoppingCartCheckoutIcon/> : ``}
+                    {index == 3 ? <ShoppingBag/> : ``}
                 </ListItemIcon>
                 <ListItemText
                   primary={text}

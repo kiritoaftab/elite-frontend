@@ -11,6 +11,7 @@ import AdminOrders from './pages/AdminOrders';
 import AddVendor from './pages/AddVendor';
 import AddCashier from './pages/AddCashier';
 import AddProduct from './pages/AddProduct';
+import AdminPayouts from './pages/AdminPayouts';
 
 // Lazy load the Login component
 const Login = React.lazy(() => import('./pages/Login'));
@@ -40,6 +41,7 @@ function App() {
           <Route path='addVendor' element={<AddVendor/>}/>
           <Route path='addCashier' element={<AddCashier/>}/>
           <Route path='addProduct' element={<AddProduct/>} />
+          <Route path='payouts' element={<AdminPayouts/>}/>
         </Route>
        
       </Routes>
